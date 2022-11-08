@@ -1,6 +1,6 @@
 import random
 import logging
-#from collections import Counter
+from collections import Counter
 
 POPULATION_SIZE = 100
 OFFSPRING_SIZE = 40
@@ -10,11 +10,13 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 #Individual = namedtuple("Individual", ["selected","solution","available"])
 
 def problem(N, seed=None):
+    state = random.getstate()
     random.seed(seed)
     return [
         list(set(random.randint(0, N - 1) for n in range(random.randint(N // 5, N // 2))))
         for n in range(random.randint(N, N * 5))
     ]
+    random.setstate(state)
 
 def isvalid(solution):
     selected = set()
@@ -22,10 +24,10 @@ def isvalid(solution):
         selected = selected | set(_)
     return selected==set(range(N))
 
-@profile
+#@profile
 def fitness(state):
-    #selected=state[0]
     solution = state[0]
+
     selected = set()
     for _ in solution:
         selected=selected | set(_)
@@ -33,14 +35,13 @@ def fitness(state):
     """
     cnt = Counter()
     cnt.update(sum((e for e in solution), start=()))
-    return  sum(cnt[c] == 1 for c in cnt),-sum(cnt[c] - 1 for c in cnt if cnt[c] > 1)
+    return  (sum(cnt[c] == 1 for c in cnt) ,-sum(cnt[c] - 1 for c in cnt if cnt[c] > 1),)
     """
-
 
 def tournament(population,tournament_size=2):
     return max(random.choices(population,k=tournament_size), key=lambda i:i[2])
 
-@profile
+#@profile
 def mutation(state):
     solution,available,_=state
 
@@ -60,7 +61,7 @@ def mutation(state):
     f=fitness((solution,available))
     return (solution,available,f)  #selected,
 
-@profile
+#@profile
 def crossover(p1,p2):
     solution1, available, _ = p1
     solution2, _, _ = p2
@@ -72,7 +73,7 @@ def crossover(p1,p2):
     f = fitness((solution, available))
     return (solution, newAvailable,f)
 
-@profile
+#@profile
 def main():
 
     lists = sorted(problem(N, seed=42), key=lambda l: len(l))
@@ -91,7 +92,7 @@ def main():
         f=fitness((tuple(set(genome)), available))
         population.append((tuple(set(genome)),available,f)) #eve add fitness  selected,
 
-    #population.append((tuples,tuple(),fitness((tuples,tuple()))))
+    population.append((tuples,tuple(),fitness((tuples,tuple()))))
     #fitness_log = [(0, fitness(i)) for i in population]
 
     for g in range(NUM_GENERATIONS):
@@ -109,8 +110,10 @@ def main():
             offspring.append(o)
         population += offspring
         # sort and select the fittest mu
+
+        population = tuple(_ for _ in population if isvalid(_[0]))
         population = sorted(population, key=lambda i: i[2], reverse=True)[:POPULATION_SIZE]
-        if(population[2]==N):
+        if(population[2]==N):   #insert steady state
             break
     population=tuple(_ for _ in population if isvalid(_[0]))
     solution=population[0][0]
@@ -125,5 +128,5 @@ def main():
 
 if __name__=="__main__":
     with open('solutions.txt', 'w') as file:
-        for N in [5, 10, 20, 100,500,1000]:
+        for N in [5,10,20,100,500,1000]:
             main()
