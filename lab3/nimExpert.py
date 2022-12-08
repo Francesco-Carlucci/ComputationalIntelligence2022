@@ -1,13 +1,14 @@
 import logging
 import random
 from collections import namedtuple
+import copy
 
 Nimply = namedtuple("Nimply", "row, num_objects")
 Gene = namedtuple("Gene", ["condition","action","place"])
 Individual = namedtuple("Individual", ["genome", "fitness"])
 
 nim_rows = 5
-eval_amount = 2000
+eval_amount = 1000
 genome_size = 3
 population_size = 20
 offspring_size = 50
@@ -113,7 +114,6 @@ def nimsum_get(state: Nim, row: int) -> Nimply:
 actions = {"all": all_get, "one": one_get, "half": half_get, "rand": rand_get, "nimsum": nimsum_get}
 
                                                                 #######################  Place  #####################
-
 def rand_place(state: Nim) -> int:
     row = random.randrange(0,len(state.rows))
     #print('rand place choose row: ', state, row)
@@ -251,10 +251,10 @@ def mutation(indiv: Individual) -> Individual:
     acceptable = list(mutable[mut_attr_idx].keys())
     acceptable.remove(attr)
     new_attr = random.choice(acceptable)
-    new_genome=indiv.genome
-    new_genome[mut_gene_idx]=new_genome[mut_gene_idx][:mut_attr_idx]+(new_attr,)+new_genome[mut_gene_idx][mut_attr_idx+1:]
+    new_genome=copy.deepcopy(indiv.genome)   #.deepcopy()
+    new_genome[mut_gene_idx]=indiv.genome[mut_gene_idx][:mut_attr_idx]+(new_attr,)+indiv.genome[mut_gene_idx][mut_attr_idx+1:]
     #new_genome = indiv.genome[:mut_gene_idx] + new_gene + indiv.genome[mut_gene_idx + 1:]
-    fitness=evaluate(new_genome)
+    fitness = evaluate(new_genome)
     return Individual(new_genome,fitness)
 
 def cross_over(i1: Individual, i2: Individual) -> Individual:
@@ -276,7 +276,7 @@ def evolution():
     for g in range(generations):
         offspring = list()
         for i in range(offspring_size):
-            if random.random() < 1:
+            if random.random() < 2:
                 p = tournament(population)
                 o = mutation(p)
             else:
@@ -315,9 +315,11 @@ if __name__ == '__main__':
     print(genome)
     player1=Individual(genome, evaluate(genome))
     print("generated:",player1)
+
     genome2=[("true",'all',"least")]
     player2=Individual(genome2,evaluate(genome2))
     print("dumb-by gabriele:",player2)
+
     genome3 = [("true", 'rand', "rand"),("true", 'rand', "rand"),("true", 'rand', "rand")]
     player3 = Individual(genome3, evaluate(genome3))
     print("random:", player3)
@@ -330,6 +332,7 @@ if __name__ == '__main__':
     genome4=[('even_elems', 'half', 'least'), ('odd_elems', 'one', 'most'), ('odd_stacks', 'rand', 'least')]
     player4=Individual(genome4,evaluate(genome4))
     print("evoluted: ",player4)
+    #print(evaluate([('true', 'nimsum', 'rand'), ('true', 'rand', 'least'), ('nimsum', 'half', 'rand')]))
     #print(evaluate([('nimsum', 'nimsum', 'nimsum'), ('even_elems', 'all', 'least'), ('nimsum', 'one', 'most')]))
     #print(evaluate([('even_elems', 'all', 'rand'), ('even_stacks', 'nimsum', 'most'), ('true', 'nimsum', 'nimsum')]))
 
@@ -339,6 +342,8 @@ if __name__ == '__main__':
     #Individual(genome=[('true', 'one', 'nimsum'), ('even_stacks', 'half', 'rand'), ('even_stacks', 'one', 'rand')],fitness=1.0)
     #Individual(genome=[('nimsum', 'nimsum', 'nimsum'), ('even_elems', 'rand', 'rand'), ('even_stacks', 'half', 'most')], fitness=1.0)
     #Individual(genome=[('true', 'all', 'rand'), ('even_stacks', 'rand', 'nimsum'), ('true', 'one', 'rand')], fitness=1.0)
+
+    #very low fitness:[('even_stacks', 'nimsum', 'rand'), ('even_elems', 'one', 'least'), ('even_elems', 'rand', 'least')] 0.06
 
     """
     game=Nim(5)
