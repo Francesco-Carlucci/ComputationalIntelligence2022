@@ -8,7 +8,7 @@ Gene = namedtuple("Gene", ["condition","action","place"])
 Individual = namedtuple("Individual", ["genome", "fitness"])
 
 nim_rows = 5
-eval_amount = 1000
+eval_amount = 2000
 genome_size = 3
 population_size = 20
 offspring_size = 50
@@ -19,6 +19,9 @@ class Nim:
     def __init__(self, num_rows: int, k: int = None) -> None:
         self._rows = [2*i + 1 for i in range(num_rows)]
         self._k = k
+
+    def fromRows(rows):
+        self._rows=rows
 
     def nimming(self, ply:Nimply) -> None:
         if ply is None:
@@ -60,7 +63,7 @@ class Nim:
             for j in range(row):
                 print("|", end=' ')
             print("\n")
-                                            ####################### Condition #################
+                                            ####################### Conditions #################
 def even_elems_if(state: Nim) -> bool:
     return sum(state.rows)%2 == 0
 
@@ -76,7 +79,7 @@ def odd_stacks_if(state: Nim) -> bool:
 def nimsum_if(state: Nim) -> bool:
     return nimSum(state.rows)!=0
 
-conditions = {"even_elems": even_elems_if, "odd_elems": odd_elems_if, "even_stacks": even_stacks_if, "odd_stacks": odd_stacks_if, "nimsum": nimsum_if,"true":lambda x:True}
+conditions = {"even_elems": even_elems_if, "odd_elems": odd_elems_if, "even_stacks": even_stacks_if, "odd_stacks": odd_stacks_if,"true":lambda x:True} #"nimsum": nimsum_if
 
                                                             ###################  Action  ###############
 def all_get(state: Nim, row: int) -> Nimply:
@@ -98,20 +101,20 @@ def rand_get(state: Nim, row: int) -> Nimply:
 def nimsum_get(state: Nim, row: int) -> Nimply:
     rows=state.rows
     totNimSum=nimSum(rows)
-    if(totNimSum!=0):
-        nonOneRow=checkMisere(rows)
-        if nonOneRow!=-1:
-            if len([_ for _ in rows if _!=0])%2==0:
-                return Nimply(nonOneRow, rows[nonOneRow])
-            else:
-                return Nimply(nonOneRow, rows[nonOneRow]-1)
-        for i,row in enumerate(rows):
-            lineNimSum=nimSum([totNimSum,row])
-            if(lineNimSum<row):
-                return Nimply(i,row-lineNimSum)
-    return rand_get(state, row)
 
-actions = {"all": all_get, "one": one_get, "half": half_get, "rand": rand_get, "nimsum": nimsum_get}
+    if checkMisere(rows)!=-1:
+        if len(rows)%2==0:
+            return Nimply(row, rows[row])
+        elif rows[row]>1:
+            return Nimply(row, rows[row]-1)
+
+    lineNimSum=nimSum([totNimSum,rows[row]])
+    if (lineNimSum < rows[row]):
+        return Nimply(row,rows[row]-lineNimSum)
+    ply=rand_get(state,row)
+    return ply
+
+actions = {"all": all_get, "one": one_get, "half": half_get, "rand": rand_get}  #, "nimsum": nimsum_get
 
                                                                 #######################  Place  #####################
 def rand_place(state: Nim) -> int:
@@ -141,13 +144,13 @@ def nimsum_place(state: Nim) -> int:
                 return i
     return rand_place(state)
 
-places = {"rand": rand_place, "most": most_place, "least": least_place, "nimsum": nimsum_place}
+places = {"rand": rand_place, "most": most_place, "least": least_place}  #, "nimsum": nimsum_place
 
 #Fitness
 def evaluate(genome: list) -> float:
     win_count = 0
     for _ in range(eval_amount):
-        game = Nim(random.randint(3,11))
+        game = Nim(random.randint(5,21))
         turn=1   #inizia l'individuo turno 0, random turno 1
         while not game.endTest():
             turn = 1 - turn
@@ -298,7 +301,6 @@ def evolution():
     solution = population[0]
     print(f"Solution : genome={solution[0]} (fitness={solution[1]*100}%)")
     return solution
-
 
 #CONDITIONS:  "even_elems", "odd_elems", "even_stacks", "odd_stacks", "nimsum","true"
 #PLACES:      "rand", "most", "least", "nimsum"
