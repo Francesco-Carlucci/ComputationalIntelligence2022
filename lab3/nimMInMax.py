@@ -1,5 +1,8 @@
 from collections import namedtuple
 import logging
+import matplotlib.pyplot as plt
+import networkx as nx
+from networkx.drawing.nx_pydot import graphviz_layout
 
 Nimply = namedtuple("Nimply", "row, num_objects")
 
@@ -59,22 +62,34 @@ class Nim:
                 print("|", end=' ')
             print("\n")
 
+cnt=0
+"""global cnt
+    id=cnt
+    cnt+=1"""
 
 def minmax(state: Nim, turn) -> Nimply:
+
     # val=game.endTest()
     # possible=list(set(range(9))-board[0]-board[1])
     possible = [Nimply(r, o) for r, c in enumerate(state.rows) for o in range(1, c + 1)]
     if state.endTest():
-        return None, turn
+        return None, 1
     evaluations = list()
     for ply in possible:
         # print(ply)
         new_state = Nim(1, state.k).fromRows(state.rows)
         new_state.nimming(ply)
+        #graph.add_node(new_state.rows)
+        #graph.nodes[new_state.rows]["label"] = new_state.rows
+        #graph.add_edge(state, new_state)  #, label=ply
 
+        #print("    ", end="")
         _, val = minmax(new_state, turn - 2 * turn)
         evaluations.append((ply, -val))
-    return max(evaluations, key=lambda k: k[1])
+        #print(evaluations)
+    ply=max(evaluations, key=lambda k: k[1])
+    #print(ply)
+    return ply
 
 
 def won(cells):
@@ -95,18 +110,47 @@ def human_play(game):   #human play
         else:
             return int(rowIdx),int(n)
 
+
+
 if __name__ == "__main__":
+    cnt=0
+
+    graph = nx.DiGraph()
     game = Nim(3)
-    turn =1
+    #game.fromRows([2])
+    turn = 1
+    game.board()
+    #labels={}
+    graph.add_node(game.rows)
+    graph.nodes[game.rows]["label"]=game.rows
+    #labels[cnt]=game.rows
+    print(graph.nodes(),graph.nodes.data())
+
     while not game.endTest():
         if turn:
-            ply = minmax(game,1)
+            ply = minmax(game,turn)
             print(ply)
             game.nimming(ply[0])
         else:
             game.nimming(human_play(game))
         game.board()
         turn=1-turn
+
+        """
+        # plt.figure(figsize=(15, 9))
+        #pos = graphviz_layout(graph, prog="circo")  # dot neato twopi circo fdp sfdp
+        pos = nx.spring_layout(graph, seed=32)
+        nx.draw(
+            graph,
+            with_labels=True,
+            labels={n: l for n, l in graph.nodes.data("label")},
+            # pos=pos,
+            node_size=500,
+        )
+        nx.draw_networkx_edge_labels(graph, pos=pos)
+        plt.show()
+        """
+
     if turn:
         print("You lost")
     else:

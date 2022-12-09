@@ -24,7 +24,7 @@ def eval_terminal(x, o):
         return 0
 
 if __name__=="__main__":
-    board=(set([0,1,6,3]),set([2,4,5]))  #range(9)
+    board=(set([]),set([]))  #range(9)
 
     for i in range(9):
         if (i!=0 and i % 3 == 0):
