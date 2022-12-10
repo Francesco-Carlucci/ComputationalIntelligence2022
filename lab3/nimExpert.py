@@ -279,7 +279,7 @@ def evolution():
     for g in range(generations):
         offspring = list()
         for i in range(offspring_size):
-            if random.random() < 2:
+            if random.random() < 0.7:
                 p = tournament(population)
                 o = mutation(p)
             else:
