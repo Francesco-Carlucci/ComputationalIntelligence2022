@@ -64,12 +64,7 @@ class Nim:
             print("\n")
 
 cnt=0
-"""global cnt
-    id=cnt
-    cnt+=1"""
-#graph.add_node(new_state.rows)
-#graph.nodes[new_state.rows]["label"] = new_state.rows
-#graph.add_edge(state, new_state)  #, label=ply
+
 def human_play(game):   #human play
     while 1:
         str=input("Enter row index and number of elements to remove: ")

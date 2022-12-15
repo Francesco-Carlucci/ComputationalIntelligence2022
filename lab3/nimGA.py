@@ -20,7 +20,7 @@ class Nim:
         self._rows = [2*i + 1 for i in range(num_rows)]
         self._k = k
 
-    def fromRows(rows):
+    def fromRows(self,rows):
         self._rows=rows
 
     def nimming(self, ply:Nimply) -> None:
@@ -308,7 +308,7 @@ def evolution():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    game = Nim(5)
+    game = Nim(nim_rows)
     genome=list()
     for _ in range(genome_size):
         gene = (
