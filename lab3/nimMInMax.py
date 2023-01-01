@@ -165,14 +165,13 @@ if __name__ == "__main__":
     exp_eval=[0,0.2,0.4,0.5,0.6,0.8,0.9,1]
 
     graph = nx.DiGraph()
-    game = Nim(7)
+    game = Nim(5)
     #game.fromRows([20])
 
 
     graph.add_node(game.rows)
     graph.nodes[game.rows]["label"]=game.rows
-
-
+    """
     res=[]
     for prob in exp_eval:
         result=evaluate(prob)
@@ -181,7 +180,7 @@ if __name__ == "__main__":
 
     plt.plot(exp_eval,res)
     plt.show()
-
+    """
 
     #play against human
     turn = 1
